@@ -4,16 +4,41 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import com.evolve.model.Cart;
 import com.evolve.model.CartItem;
 import com.evolve.repository.CartItemRepository;
 import com.evolve.repository.CartRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CartIntegrationTest {
+
+
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
+
+    @Container
+    static GenericContainer<?> redis = new GenericContainer<>("redis:7.2").withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.redis.host", redis::getHost);
+        registry.add("spring.redis.port", () -> redis.getMappedPort(6379));
+    }
 
     @Autowired
     private WebTestClient webTestClient;
@@ -43,13 +68,13 @@ public class CartIntegrationTest {
         newCart.setStatus("active");
 
         webTestClient.post()
-            .uri("/carts/user/1")
-            .bodyValue(newCart)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.userId").isEqualTo(1)
-            .jsonPath("$.status").isEqualTo("active");
+                .uri("/carts/user/1")
+                .bodyValue(newCart)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.userId").isEqualTo(1)
+                .jsonPath("$.status").isEqualTo("active");
     }
 
     @Test
@@ -60,12 +85,12 @@ public class CartIntegrationTest {
         cartRepository.save(cart).block();
 
         webTestClient.get()
-            .uri("/carts/user/99")
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$[0].userId").isEqualTo(99)
-            .jsonPath("$[0].status").isEqualTo("pending");
+                .uri("/carts/user/99")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[0].userId").isEqualTo(99)
+                .jsonPath("$[0].status").isEqualTo("pending");
     }
 
     @Test
@@ -78,12 +103,12 @@ public class CartIntegrationTest {
         saved.setStatus("checked_out");
 
         webTestClient.put()
-            .uri("/carts/" + saved.getId())
-            .bodyValue(saved)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.status").isEqualTo("checked_out");
+                .uri("/carts/" + saved.getId())
+                .bodyValue(saved)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("checked_out");
     }
 
     @Test
@@ -94,9 +119,9 @@ public class CartIntegrationTest {
         Cart saved = cartRepository.save(cart).block();
 
         webTestClient.delete()
-            .uri("/carts/" + saved.getId())
-            .exchange()
-            .expectStatus().isNoContent();
+                .uri("/carts/" + saved.getId())
+                .exchange()
+                .expectStatus().isNoContent();
     }
     @Test
     public void testAddCartItem() {
@@ -149,4 +174,3 @@ public class CartIntegrationTest {
         assertThat(cartItemRepository.findById(itemId).block()).isNull();
     }
 }
-
