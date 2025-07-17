@@ -1,0 +1,18 @@
+server:
+  port: 8888
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Shrasti0207/configuration-repo.git
+          clone-on-start: true
+          default-label: main
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
