@@ -1,4 +1,4 @@
-# Aman Jha
+# Shrasti Gupta
 
 ## 📅 Day 2 - Spring Cloud Gateway & Config Server
 
@@ -14,24 +14,13 @@ Design and deploy a microservice architecture using:
 
 ---
 
-### 🗂️ Folder Structure
-
-    ```bash
-    Microservices_workshop-Aman_Jha/
-    └── day2/
-    ├── product-service/
-    ├── order-service/
-    ├── spring-cloud-gateway/
-    
-    ```
----
 
 ### 🔗 External Config Repository
 
 This project uses a centralized config repository managed via Spring Cloud Config Server.
 
 📁 Public GitHub config repo:
-**[https://github.com/Shrasti0207/configuration-repo.git](https://github.com/Amaninreal/config-repo)**
+**[https://github.com/Shrasti0207/configuration-repo.git]**
 
 It includes:
 - `product-service.yml`
