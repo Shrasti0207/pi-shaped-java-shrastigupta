@@ -31,7 +31,7 @@ Design and deploy a microservice architecture using:
 This project uses a centralized config repository managed via Spring Cloud Config Server.
 
 📁 Public GitHub config repo:
-**[https://github.com/Amaninreal/config-repo](https://github.com/Amaninreal/config-repo)**
+**[https://github.com/Shrasti0207/configuration-repo.git](https://github.com/Amaninreal/config-repo)**
 
 It includes:
 - `product-service.yml`
