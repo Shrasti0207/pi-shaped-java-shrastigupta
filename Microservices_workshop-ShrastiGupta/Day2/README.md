@@ -81,12 +81,15 @@ You’ll be prompted for credentials.
 ## 📘 Core Concept Questions
 
 ### 1. What is the purpose of `bootstrap.yml` in a config client?
-`bootstrap.yml` is loaded **before** `application.yml`. It configures properties required during the **bootstrap phase**, like config server URL and app name.
-
+- It is loaded **before** `application.yml`.
+- Used to configure the **Spring Cloud Config Server URI**, application name, and profile.
+- Essential for **fetching external configurations** early in the startup phase.
 ---
 
 ### 2. How does `@RefreshScope` work and when should it be used?
-It allows beans to be **refreshed at runtime** when `/actuator/refresh` is triggered. Use it for beans that should reload values without restarting the app.
+- Marks beans that should be **reloaded at runtime** when a config changes.
+- Used with **Spring Cloud Bus** and `/actuator/refresh`.
+- Apply to services whose config needs **runtime update** (e.g., message text, limits).
 
 ---
 
@@ -98,15 +101,15 @@ It allows beans to be **refreshed at runtime** when `/actuator/refresh` is trigg
 ---
 
 ### 4. How does rate limiting in Spring Cloud Gateway work internally?
-Rate limiting (e.g., with RedisRateLimiter) uses the **token bucket algorithm**. It restricts requests per second and burst capacity using Redis backend.
-
+- Uses **Redis** as a token bucket store (via `RedisRateLimiter`).
+- Controls requests per second using **tokens and replenish rate**.
+- Applied via **Gateway filters** on specific routes.
 ---
 
 ### 5. How do you test a configuration change without restarting services?
 
-- Edit properties in the **config Git repo**
-- Call `POST /actuator/refresh` on the service
-- Beans with `@RefreshScope` reflect updated values
+- Update config in Git (or repo), trigger `/actuator/refresh` or use **Spring Cloud Bus** for auto-propagation.
+- `@RefreshScope` beans reload with new values.
 
 ---
 
@@ -123,25 +126,18 @@ It uses **message brokers** like RabbitMQ/Kafka to **broadcast refresh events** 
 ---
 
 ### 8. How is JWT verified at the Gateway level?
-JWT tokens are parsed and validated via **security filters**, which:
-- Check the token’s signature
-- Extract claims (e.g., roles)
-- Enforce role-based access control
+- Use a **custom filter** or **Spring Security filter** in Gateway.
+- JWT token is extracted from headers → verified (signature, expiry) → claims extracted → request forwarded.
 
 ---
 
 ### 9. What’s the role of service discovery when routing via Gateway?
-Instead of hardcoded URLs, use **service discovery (like Eureka)**:
-```yaml
-uri: lb://product-service
-````
+- Gateway uses **DiscoveryClient (e.g., Eureka)** to dynamically resolve service URLs.
+- Allows **load-balanced routing** without hardcoding service addresses.
+
 ---
 ### 10. Why prefer centralized config and not embedded .yml?
-Centralized configuration:
-- Enables live updates
+- Enables **externalized, dynamic configuration**.
+- Central control for **all environments** (dev, QA, prod).
+- Easier maintenance, versioning, and auditing of changes via Git or Vault.
 
-- Promotes consistency
-
-- Avoids config duplication
-
-- Works seamlessly with Spring Cloud Config + Spring cloud Bus
